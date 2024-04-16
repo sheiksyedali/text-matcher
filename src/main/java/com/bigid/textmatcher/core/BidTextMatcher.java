@@ -26,10 +26,6 @@ public class BidTextMatcher {
     private final BlockingQueue<RawText> rawTextQueue;
     private final BlockingQueue<TextOffset> matchTextQueue;
     private final Map<String, TextOffset> aggregatedTextResults;
-    private final int linesToRead;
-
-    private final boolean isCaseSensitive;
-
     private String filePath;
     private String searchKeywords;
 
@@ -39,21 +35,45 @@ public class BidTextMatcher {
     private CompletableFuture<Void>[] workers;
     private BidMatcher bidMatcher;
     private BidAggregator bidAggregator;
+    private int linesToRead = 1000; //Default 1000 lines to read; max 20000
+
+    private boolean isCaseSensitive = true; //Default case sensitive true
+
+    private int matcherWorkers = 5;//Default 5 workers; max 30;
 
 
-
-    public BidTextMatcher(String filePath, int linesToRead, String searchKeywords, boolean isCaseSensitive) throws ExecutionException, InterruptedException, TimeoutException {
+    public BidTextMatcher(String filePath, String searchKeywords) throws ExecutionException, InterruptedException, TimeoutException {
         rawTextQueue = new LinkedBlockingQueue<>(RAW_TEXT_QUEUE_CAPACITY);
         matchTextQueue = new LinkedBlockingQueue<>(); // No capacity, by default max value of Integer.MAX_VALUE
         aggregatedTextResults = new ConcurrentHashMap<>();
-        this.linesToRead = linesToRead;
         this.isCaseSensitive = isCaseSensitive;
 
         this.filePath = filePath;
         this.searchKeywords = searchKeywords;
+    }
 
+    public BidTextMatcher caseSensitive(boolean isCaseSensitive){
+        this.isCaseSensitive = isCaseSensitive;
+        return this;
+    }
+
+    public BidTextMatcher linesToRead(int linesToRead){
+        if(linesToRead>0 && linesToRead<=30000){
+            this.linesToRead = linesToRead;
+        }
+        return this;
+    }
+
+    public BidTextMatcher matcherWorkers(int matcherWorkers){
+        if(matcherWorkers>0 && matcherWorkers<=30){
+            this.matcherWorkers = matcherWorkers;
+        }
+        return this;
+    }
+
+    public BidTextMatcher build() throws ExecutionException, InterruptedException, TimeoutException {
         prepare();
-
+        return this;
     }
 
     /**
@@ -77,7 +97,7 @@ public class BidTextMatcher {
         fileReadingFuture = fileReader.getFileReadingFuture();
 
         //Prepare Matcher workers
-        bidMatcher = new BidMatcher(rawTextQueue, matchTextQueue, searchToken, isCaseSensitive);
+        bidMatcher = new BidMatcher(rawTextQueue, matchTextQueue, searchToken, isCaseSensitive, matcherWorkers);
         executorService = bidMatcher.getExecutorService();
         workers = bidMatcher.getWorkers();
 

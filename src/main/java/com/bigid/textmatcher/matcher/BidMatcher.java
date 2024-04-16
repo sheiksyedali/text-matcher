@@ -17,15 +17,16 @@ public class BidMatcher {
     private final BlockingQueue<TextOffset> matchTextQueue;
     private final List<String> searchToken;
     private final boolean isCaseSensitive;
-    private final int WORKER_SIZE = 5;
+    private int workerSize = 5; //Default workers 5; max 30;
     private ExecutorService executorService;
     private CompletableFuture<Void>[] workers;
 
-    public BidMatcher(BlockingQueue<RawText> rawTextQueue, BlockingQueue<TextOffset> matchTextQueue, List<String> searchToken, boolean isCaseSensitive){
+    public BidMatcher(BlockingQueue<RawText> rawTextQueue, BlockingQueue<TextOffset> matchTextQueue, List<String> searchToken, boolean isCaseSensitive, int workerSize){
         this.rawTextQueue = rawTextQueue;
         this.matchTextQueue = matchTextQueue;
         this.searchToken = searchToken;
         this.isCaseSensitive = isCaseSensitive;
+        this.workerSize = workerSize;
 
         prepare();
     }
@@ -34,10 +35,10 @@ public class BidMatcher {
      * Prepare the dependencies
      */
     private void prepare(){
-        executorService = Executors.newFixedThreadPool(WORKER_SIZE);
-        workers = new CompletableFuture[WORKER_SIZE];
+        executorService = Executors.newFixedThreadPool(workerSize);
+        workers = new CompletableFuture[workerSize];
 
-        for (int i = 0; i < workers.length; i++) {
+        for (int i = 0; i < workerSize; i++) {
             workers[i] = CompletableFuture.runAsync(this::process, executorService);
         }
     }
