@@ -3,8 +3,6 @@ package com.bigid.textmatcher;
 import com.bigid.textmatcher.core.BidTextMatcher;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,8 +28,8 @@ public class TextMatcherSystem {
         String searchKeywords = "James,John,Robert,Michael,William,David,Richard,Charles,Joseph,Thomas,Christopher,Daniel,Paul,Mark,Donald," +
                 "George,Kenneth,Steven,Edward,Brian,Ronald,Anthony,Kevin,Jason,Matthew,Gary,Timothy,Jose,Larry,Jeffrey," +
                 "Frank,Scott,Eric,Stephen,Andrew,Raymond,Gregory,Joshua,Jerry,Dennis,Walter,Patrick,Peter,Harold,Douglas,Henry,Carl,Arthur,Ryan,Roger";
-        int linesToRead = 1000;
-        int matcherWorkers = 5;
+        int linesToRead = 2000;
+        int matcherWorkers = 15;
         boolean caseSensitive = true;
 
         BidTextMatcher bidTextMatcher = new BidTextMatcher(filePath, searchKeywords)

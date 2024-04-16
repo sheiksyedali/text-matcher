@@ -35,7 +35,7 @@ public class BidTextMatcher {
     private CompletableFuture<Void>[] workers;
     private BidMatcher bidMatcher;
     private BidAggregator bidAggregator;
-    private int linesToRead = 1000; //Default 1000 lines to read; max 20000
+    private int linesToRead = 1000; //Default 1000 lines to read; max 30000
 
     private boolean isCaseSensitive = true; //Default case sensitive true
 
@@ -46,7 +46,6 @@ public class BidTextMatcher {
         rawTextQueue = new LinkedBlockingQueue<>(RAW_TEXT_QUEUE_CAPACITY);
         matchTextQueue = new LinkedBlockingQueue<>(); // No capacity, by default max value of Integer.MAX_VALUE
         aggregatedTextResults = new ConcurrentHashMap<>();
-        this.isCaseSensitive = isCaseSensitive;
 
         this.filePath = filePath;
         this.searchKeywords = searchKeywords;
@@ -58,14 +57,14 @@ public class BidTextMatcher {
     }
 
     public BidTextMatcher linesToRead(int linesToRead){
-        if(linesToRead>0 && linesToRead<=30000){
+        if(linesToRead>0 && linesToRead<=30000){ //Allowed range 1-30000
             this.linesToRead = linesToRead;
         }
         return this;
     }
 
     public BidTextMatcher matcherWorkers(int matcherWorkers){
-        if(matcherWorkers>0 && matcherWorkers<=30){
+        if(matcherWorkers>0 && matcherWorkers<=30){ //Allowed range 1-30
             this.matcherWorkers = matcherWorkers;
         }
         return this;

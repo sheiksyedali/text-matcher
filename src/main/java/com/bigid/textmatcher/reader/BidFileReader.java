@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
  * Author: Sheik Syed Ali
  */
 public class BidFileReader {
-    private final int LINES_READ_DEFAULT = 1000;
     private Path path;
     private BlockingQueue<RawText> rawTextQueue;
     private final int linesToRead;
@@ -67,18 +66,7 @@ public class BidFileReader {
 
                 batch = readLines(buffer, carryForward, batch);
                 //Check and queue
-                if(batch.size() >= linesToRead) {
-                    List<String> limitsBatch = batch.stream()
-                            .limit(linesToRead)
-                            .collect(Collectors.toList());
-
-                    RawText text = prep(limitsBatch);
-                    rawTextQueue.add(text);
-
-                    batch.subList(0, linesToRead).clear();
-
-                    System.out.println("=> Reader-> Batch size: "+limitsBatch.size()+"; start line: "+text.getStarLine()+"; end line: "+text.getEndLine());
-                }
+                checkAndQueue(batch);
 
                 buffer.compact();
                 position += bytesRead;
@@ -100,6 +88,21 @@ public class BidFileReader {
             throw new RuntimeException(e);
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void checkAndQueue(List<String> batch){
+        if(batch.size() >= linesToRead) {
+            List<String> limitsBatch = batch.stream()
+                    .limit(linesToRead)
+                    .collect(Collectors.toList());
+
+            RawText text = prep(limitsBatch);
+            rawTextQueue.add(text);
+
+            batch.subList(0, linesToRead).clear();
+
+            System.out.println("=> Reader-> Batch size: "+limitsBatch.size()+"; start line: "+text.getStarLine()+"; end line: "+text.getEndLine());
         }
     }
 
