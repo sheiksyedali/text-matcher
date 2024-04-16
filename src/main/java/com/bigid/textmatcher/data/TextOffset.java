@@ -36,9 +36,6 @@ public class TextOffset {
 
     @Override
     public String toString() {
-        return "TextOffset{" +
-                "text='" + text + '\'' +
-                ", offsets=" + offsets +
-                '}';
+        return "[" + offsets + "]";
     }
 }

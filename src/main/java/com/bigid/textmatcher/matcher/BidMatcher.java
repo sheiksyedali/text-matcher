@@ -58,7 +58,6 @@ public class BidMatcher {
         int startIndex = rawText.getStarLine();
 
         Matcher matcher;
-
         for(String line : rawText.getTexts()) {
             if(!isCaseSensitive){
                 line = line.toLowerCase();
@@ -74,11 +73,10 @@ public class BidMatcher {
                 Pattern searchPattern = Pattern.compile(token);
                 matcher = searchPattern.matcher(line);
                 while (matcher.find()) {
-                    Offset offset = new Offset(startIndex, matcher.start()+1);
-                    textOffset.addOffset(offset);
+                    int index = matcher.start()+1;
+                    Offset offset = new Offset(startIndex, index);
 
-//                    String output = "["+token+"] ["+line+"] ["+(matcher.start()+1)+"] ["+rawText.getStartIndex()+"] ["+rawText.getEndIndex()+"]" ;
-//                    System.out.println(output);
+                    textOffset.addOffset(offset);
                 }
 
                 parsedTextQueue.add(textOffset);

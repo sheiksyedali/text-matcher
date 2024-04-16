@@ -26,7 +26,6 @@ public class BidFileReader {
 
     private int startLineMarker = 1;
     private int endLineMarker = 0;
-
     private CompletableFuture<Void> fileReadingFuture;
 
     public BidFileReader(Path path, BlockingQueue<RawText> rawTextQueue, int linesToRead) throws ExecutionException, InterruptedException, TimeoutException {
@@ -71,6 +70,7 @@ public class BidFileReader {
                     rawTextQueue.add(text);
 
                     batch.subList(0, linesToRead).clear();
+
                     System.out.println("=> Reader-> Batch size: "+limitsBatch.size()+"; start line: "+text.getStarLine()+"; end line: "+text.getEndLine());
                 }
 
@@ -109,14 +109,9 @@ public class BidFileReader {
                     line = carryForward + line;
                     batch.add(line);
 
-//                    System.out.println("<<<<"+carryForward+">>>>>");
-//                    System.out.println("<Partial appended> Read line: "+line);
-
                     carryForward.setLength(0);
                 } else {
                     batch.add(lineBuilder.toString());
-
-//                    System.out.println("Read line: "+lineBuilder.toString());
                 }
                 lineBuilder.setLength(0);
 

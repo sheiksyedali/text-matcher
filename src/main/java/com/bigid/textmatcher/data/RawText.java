@@ -32,8 +32,8 @@ public class RawText {
     public String toString() {
         return "BidText{" +
                 "texts=" + texts +
-                ", startIndex=" + starLine +
-                ", endIndex=" + endLine +
+                ", startLine=" + starLine +
+                ", endLine" + endLine +
                 '}';
     }
 }

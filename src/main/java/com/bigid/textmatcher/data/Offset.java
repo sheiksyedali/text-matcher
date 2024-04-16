@@ -21,9 +21,9 @@ public class Offset {
 
     @Override
     public String toString() {
-        return "Offset{" +
+        return "[" +
                 "lineOffset=" + lineOffset +
                 ", charOffset=" + charOffset +
-                '}';
+                "]";
     }
 }
