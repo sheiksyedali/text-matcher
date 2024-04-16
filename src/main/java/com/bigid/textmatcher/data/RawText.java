@@ -7,33 +7,33 @@ import java.util.List;
  */
 public class RawText {
     private List<String> texts;
-    private int startIndex;
-    private int endIndex;
+    private int starLine;
+    private int endLine;
 
-    public RawText(List<String> texts, int startIndex, int endIndex){
+    public RawText(List<String> texts, int starLine, int endLine){
         this.texts = texts;
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
+        this.starLine = starLine;
+        this.endLine = endLine;
     }
 
     public List<String> getTexts() {
         return texts;
     }
 
-    public int getStartIndex() {
-        return startIndex;
+    public int getStarLine() {
+        return starLine;
     }
 
-    public int getEndIndex() {
-        return endIndex;
+    public int getEndLine() {
+        return endLine;
     }
 
     @Override
     public String toString() {
         return "BidText{" +
                 "texts=" + texts +
-                ", startIndex=" + startIndex +
-                ", endIndex=" + endIndex +
+                ", startIndex=" + starLine +
+                ", endIndex=" + endLine +
                 '}';
     }
 }

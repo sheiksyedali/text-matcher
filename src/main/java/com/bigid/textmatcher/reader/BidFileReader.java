@@ -9,14 +9,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Author: Sheik Syed Ali
  */
 public class BidFileReader {
-    private final int LINES_READ = 500;
+    private final int LINES_READ_DEFAULT = 1000;
     private Path path;
     private BlockingQueue<RawText> rawTextQueue;
+    private final int linesToRead;
     private long position = 0;
     private ByteBuffer buffer;
 
@@ -27,9 +29,10 @@ public class BidFileReader {
 
     private CompletableFuture<Void> fileReadingFuture;
 
-    public BidFileReader(Path path, BlockingQueue<RawText> rawTextQueue) throws ExecutionException, InterruptedException, TimeoutException {
+    public BidFileReader(Path path, BlockingQueue<RawText> rawTextQueue, int linesToRead) throws ExecutionException, InterruptedException, TimeoutException {
         this.path = path;
         this.rawTextQueue = rawTextQueue;
+        this.linesToRead = linesToRead;
 
         buffer = ByteBuffer.allocate(1024);
         carryForward = new StringBuilder();
@@ -45,29 +48,43 @@ public class BidFileReader {
 
     private void doRead() {
         try (AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path)) {
+            System.out.println("=> File reading begins");
+            List<String> batch = new ArrayList<>();
             while (true) {
                 Future<Integer> future = fileChannel.read(buffer, position);
                 int bytesRead = future.get(10, TimeUnit.SECONDS); // Timeout after 10 seconds
 
                 if (bytesRead <= 0) {
-                    System.out.println("Read completed.....");
                     break; // End of file
                 }
 
                 buffer.flip();
 
-                List<String> lines = readLines(buffer, carryForward);
+                batch = readLines(buffer, carryForward, batch);
+                //Check and queue
+                if(batch.size() >= linesToRead) {
+                    List<String> limitsBatch = batch.stream()
+                            .limit(linesToRead)
+                            .collect(Collectors.toList());
 
-                //handle batch size like 500, 1000 here
+                    RawText text = prep(limitsBatch);
+                    rawTextQueue.add(text);
 
-                RawText text = prep(lines);
-                rawTextQueue.add(text);
+                    batch.subList(0, linesToRead).clear();
+                    System.out.println("=> Reader-> Batch size: "+limitsBatch.size()+"; start line: "+text.getStarLine()+"; end line: "+text.getEndLine());
+                }
 
                 buffer.compact();
                 position += bytesRead;
             }
 
-//            rawTextQueue.add(new BidText(new ArrayList<>(),-1, -1));//Dummy
+            //Add remaining lines to queue
+            if(batch.size() > 0){
+                RawText text = prep(batch);
+                rawTextQueue.add(text);
+                System.out.println("=> Reader-> Batch size: "+batch.size()+"; start line: "+text.getStarLine()+"; end line: "+text.getEndLine());
+            }
+            System.out.println("=> File reading completed");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -80,8 +97,7 @@ public class BidFileReader {
         }
     }
 
-    private static List<String> readLines(ByteBuffer buffer, StringBuilder carryForward) {
-        List<String> lines = new ArrayList<>();
+    private List<String> readLines(ByteBuffer buffer, StringBuilder carryForward, List<String> batch) {
         StringBuilder lineBuilder = new StringBuilder();
 
         while (buffer.hasRemaining()) {
@@ -91,15 +107,14 @@ public class BidFileReader {
                 if(carryForward.length() > 0){
                     String line = lineBuilder.toString();
                     line = carryForward + line;
-
-                    lines.add(line);
+                    batch.add(line);
 
 //                    System.out.println("<<<<"+carryForward+">>>>>");
 //                    System.out.println("<Partial appended> Read line: "+line);
 
                     carryForward.setLength(0);
                 } else {
-                    lines.add(lineBuilder.toString());
+                    batch.add(lineBuilder.toString());
 
 //                    System.out.println("Read line: "+lineBuilder.toString());
                 }
@@ -114,7 +129,7 @@ public class BidFileReader {
             carryForward.append(lineBuilder);
         }
 
-        return lines;
+        return batch;
     }
 
     private RawText prep(List<String> lines){

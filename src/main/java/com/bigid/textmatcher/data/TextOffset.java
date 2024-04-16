@@ -29,4 +29,16 @@ public class TextOffset {
     public List<Offset> getOffsets() {
         return offsets;
     }
+
+    public void setOffsets(List<Offset> offsets) {
+        this.offsets = offsets;
+    }
+
+    @Override
+    public String toString() {
+        return "TextOffset{" +
+                "text='" + text + '\'' +
+                ", offsets=" + offsets +
+                '}';
+    }
 }

@@ -11,17 +11,17 @@ import java.util.concurrent.TimeoutException;
 public class TextMatcherSystem {
     public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
         String filePath = "big.txt";
+        int linesToRead = 500;
+
         if(args != null && args.length > 0){
              filePath = args[0];
         } else {
             System.out.println("File path parameter not found, So looking for big.txt file in relative path");
         }
 
-        String searchKeywords = "shiek,syed,ali";
+        String searchKeywords = "line,1560";
 
-
-
-        TextMatcher textMatcher = new TextMatcher(filePath, searchKeywords);
+        TextMatcher textMatcher = new TextMatcher(filePath, linesToRead, searchKeywords, true);
         textMatcher.start();
     }
 }
