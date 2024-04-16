@@ -14,22 +14,25 @@ import java.util.regex.Pattern;
  */
 public class BidMatcher {
     private final BlockingQueue<RawText> rawTextQueue;
-    private final BlockingQueue<TextOffset> parsedTextQueue;
+    private final BlockingQueue<TextOffset> matchTextQueue;
     private final List<String> searchToken;
     private final boolean isCaseSensitive;
     private final int WORKER_SIZE = 5;
     private ExecutorService executorService;
     private CompletableFuture<Void>[] workers;
 
-    public BidMatcher(BlockingQueue<RawText> rawTextQueue, BlockingQueue<TextOffset> parsedTextQueue, List<String> searchToken, boolean isCaseSensitive){
+    public BidMatcher(BlockingQueue<RawText> rawTextQueue, BlockingQueue<TextOffset> matchTextQueue, List<String> searchToken, boolean isCaseSensitive){
         this.rawTextQueue = rawTextQueue;
-        this.parsedTextQueue = parsedTextQueue;
+        this.matchTextQueue = matchTextQueue;
         this.searchToken = searchToken;
         this.isCaseSensitive = isCaseSensitive;
 
         prepare();
     }
 
+    /**
+     * Prepare the dependencies
+     */
     private void prepare(){
         executorService = Executors.newFixedThreadPool(WORKER_SIZE);
         workers = new CompletableFuture[WORKER_SIZE];
@@ -39,22 +42,29 @@ public class BidMatcher {
         }
     }
 
+    /**
+     * Worker Task
+     */
     private void process(){
         while (true) {
             try {
-                RawText text = rawTextQueue.poll(1, TimeUnit.SECONDS); // Poll with timeout
+                RawText text = rawTextQueue.poll(1, TimeUnit.SECONDS);
                 if(text == null){
                     System.out.println("=> Worker task completed");
                     break;
                 }
-                parseAndQueue(text);
+                matchAndQueue(text);
             }catch (InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    private void parseAndQueue(RawText rawText){
+    /**
+     * Search the token into text if it is matched then put it into matched queue
+     * @param rawText
+     */
+    private void matchAndQueue(RawText rawText){
         int startIndex = rawText.getStarLine();
 
         Matcher matcher;
@@ -79,7 +89,7 @@ public class BidMatcher {
                     textOffset.addOffset(offset);
                 }
 
-                parsedTextQueue.add(textOffset);
+                matchTextQueue.add(textOffset);
             }
             startIndex++;
         }

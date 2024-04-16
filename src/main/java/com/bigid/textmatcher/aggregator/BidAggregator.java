@@ -18,6 +18,10 @@ public class BidAggregator {
         this.aggregatedTextResults = aggregatedTextResults;
     }
 
+    /**
+     * Consolidate the matcher output into single map
+     * @throws InterruptedException
+     */
     public void aggregate() throws InterruptedException {
         System.out.println("=> Aggregation begins");
         TextOffset textOffset = parsedQueue.poll(1, TimeUnit.SECONDS);
@@ -36,6 +40,9 @@ public class BidAggregator {
 
     }
 
+    /**
+     * Display the final output
+     */
     public void printResults() {
         System.out.println("========================== Results =============================");
         aggregatedTextResults.forEach((key, value) -> System.out.println(key+" --> "+value));

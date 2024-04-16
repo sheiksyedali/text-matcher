@@ -39,12 +39,18 @@ public class BidFileReader {
         prepare();
     }
 
+    /**
+     * Prepare the file reader
+     */
     private void prepare(){
         fileReadingFuture = CompletableFuture.runAsync(() -> {
             doRead();
         });
     }
 
+    /**
+     * Read the file chunk by chunk
+     */
     private void doRead() {
         try (AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path)) {
             System.out.println("=> File reading begins");
@@ -97,6 +103,13 @@ public class BidFileReader {
         }
     }
 
+    /**
+     * Convert data chunks to lines
+     * @param buffer
+     * @param carryForward
+     * @param batch
+     * @return
+     */
     private List<String> readLines(ByteBuffer buffer, StringBuilder carryForward, List<String> batch) {
         StringBuilder lineBuilder = new StringBuilder();
 
@@ -127,6 +140,11 @@ public class BidFileReader {
         return batch;
     }
 
+    /**
+     * Prepare date for queue
+     * @param lines
+     * @return
+     */
     private RawText prep(List<String> lines){
         endLineMarker += lines.size();
         RawText text = new RawText(lines, startLineMarker, endLineMarker);

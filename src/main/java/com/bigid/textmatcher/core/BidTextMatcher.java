@@ -17,11 +17,14 @@ import java.util.stream.Collectors;
 
 /**
  * Author: Sheik Syed Ali
+ *
+ * Core component for text matcher
+ *
  */
 public class BidTextMatcher {
     private final int RAW_TEXT_QUEUE_CAPACITY = 5000;
     private final BlockingQueue<RawText> rawTextQueue;
-    private final BlockingQueue<TextOffset> parsedTextQueue;
+    private final BlockingQueue<TextOffset> matchTextQueue;
     private final Map<String, TextOffset> aggregatedTextResults;
     private final int linesToRead;
 
@@ -41,7 +44,7 @@ public class BidTextMatcher {
 
     public BidTextMatcher(String filePath, int linesToRead, String searchKeywords, boolean isCaseSensitive) throws ExecutionException, InterruptedException, TimeoutException {
         rawTextQueue = new LinkedBlockingQueue<>(RAW_TEXT_QUEUE_CAPACITY);
-        parsedTextQueue = new LinkedBlockingQueue<>(); // No capacity, by default max value of Integer.MAX_VALUE
+        matchTextQueue = new LinkedBlockingQueue<>(); // No capacity, by default max value of Integer.MAX_VALUE
         aggregatedTextResults = new ConcurrentHashMap<>();
         this.linesToRead = linesToRead;
         this.isCaseSensitive = isCaseSensitive;
@@ -52,6 +55,13 @@ public class BidTextMatcher {
         prepare();
 
     }
+
+    /**
+     * Prepare the dependencies like reader, matcher and aggregator
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
     private void prepare() throws ExecutionException, InterruptedException, TimeoutException {
 
         Path path = Paths.get(filePath);
@@ -67,14 +77,18 @@ public class BidTextMatcher {
         fileReadingFuture = fileReader.getFileReadingFuture();
 
         //Prepare Matcher workers
-        bidMatcher = new BidMatcher(rawTextQueue, parsedTextQueue, searchToken, isCaseSensitive);
+        bidMatcher = new BidMatcher(rawTextQueue, matchTextQueue, searchToken, isCaseSensitive);
         executorService = bidMatcher.getExecutorService();
         workers = bidMatcher.getWorkers();
 
         //Prepare Aggregator
-        bidAggregator = new BidAggregator(parsedTextQueue, aggregatedTextResults);
+        bidAggregator = new BidAggregator(matchTextQueue, aggregatedTextResults);
     }
 
+    /**
+     * Start function for text matcher
+     * @throws InterruptedException
+     */
     public void start() throws InterruptedException {
         CompletableFuture<Void> allProcessingFutures = CompletableFuture.allOf(workers);
         CompletableFuture<Void> allTasks = fileReadingFuture.thenCombine(allProcessingFutures, (fileRead, processing) -> null);
