@@ -59,6 +59,8 @@ public class BidTextMatcher {
     public BidTextMatcher linesToRead(int linesToRead){
         if(linesToRead>0 && linesToRead<=30000){ //Allowed range 1-30000
             this.linesToRead = linesToRead;
+        } else{
+            System.out.println("Invalid lines to read. Allowed range [1 - 30000. Default: "+this.linesToRead);
         }
         return this;
     }
@@ -66,6 +68,8 @@ public class BidTextMatcher {
     public BidTextMatcher matcherWorkers(int matcherWorkers){
         if(matcherWorkers>0 && matcherWorkers<=30){ //Allowed range 1-30
             this.matcherWorkers = matcherWorkers;
+        } else {
+            System.out.println("Invalid matcher workers. Allowed range [1 - 30]. Default: "+this.matcherWorkers);
         }
         return this;
     }

@@ -28,9 +28,23 @@ public class TextMatcherSystem {
         String searchKeywords = "James,John,Robert,Michael,William,David,Richard,Charles,Joseph,Thomas,Christopher,Daniel,Paul,Mark,Donald," +
                 "George,Kenneth,Steven,Edward,Brian,Ronald,Anthony,Kevin,Jason,Matthew,Gary,Timothy,Jose,Larry,Jeffrey," +
                 "Frank,Scott,Eric,Stephen,Andrew,Raymond,Gregory,Joshua,Jerry,Dennis,Walter,Patrick,Peter,Harold,Douglas,Henry,Carl,Arthur,Ryan,Roger";
-        int linesToRead = 2000;
-        int matcherWorkers = 15;
+        int linesToRead = 10000;
+        int matcherWorkers = 10;
         boolean caseSensitive = true;
+
+        if(args.length == 4){
+            searchKeywords = args[0];
+            linesToRead = Integer.parseInt(args[1]);
+            matcherWorkers = Integer.parseInt(args[2]);
+            caseSensitive = Boolean.parseBoolean(args[3]);
+        }
+        System.out.println("Configuration: ");
+        System.out.println("Search keywords: "+searchKeywords);
+        System.out.println("Lines to read: "+linesToRead);
+        System.out.println("Matcher workers: "+matcherWorkers);
+        System.out.println("Is case sensitive: "+caseSensitive);
+        System.out.println("=============================================");
+
 
         BidTextMatcher bidTextMatcher = new BidTextMatcher(filePath, searchKeywords)
                 .matcherWorkers(matcherWorkers)
