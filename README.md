@@ -23,3 +23,6 @@ If there is no arguments then the system will use the default configuration.
 **Eg:**
 	
 	java -jar text-matcher-1.0.jar Timothy,Arthur,Robert,brian 5000 8 false
+
+**Note:**
+	I have used java 17 to develop this application
